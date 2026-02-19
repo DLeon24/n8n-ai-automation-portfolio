@@ -18,7 +18,7 @@ Colección de workflows de n8n enfocados en automatización con inteligencia art
 
 1. Clona el repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/n8n-ai-automation-portfolio.git
+   git clone https://github.com/DLeon24/n8n-ai-automation-portfolio.git
    ```
 2. Abre n8n y ve a **Settings → Import Workflow**
 3. Selecciona el archivo `.json` del proyecto que quieras importar
