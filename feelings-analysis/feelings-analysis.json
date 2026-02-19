@@ -1,0 +1,423 @@
+{
+  "name": "feelings-analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Agente de feedbacks de clientes\n\nEste flujo se utiliza para analizar todos los comentarios de los clientes y pasarlos por los siguientes nodos:\n- Analisis de sentimientos\n- Clasificacion del comentario al o los equipos de trabajo\n- Solo para los comentarios negativos va a crear un plan de accion",
+        "height": 240,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        128
+      ],
+      "id": "e06f149b-edd3-4bb4-90ac-0cfc2cf88071",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a9734c5-16b6-4e51-a089-6b67f5f7aaae",
+              "leftValue": "={{ $('Feeling analysis').item.json.output.feeling }}",
+              "rightValue": "=negativo",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        416
+      ],
+      "id": "24792d35-afc1-4316-979a-ba8355ca7632",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El contenido del usuario final es:\n{{ $('Webhook - Feeling Analysis').item.json.body.message }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Rol\n\nEres un experto en {{ $('Team clasification').item.json.output.workTeam }}, encargado de diseñar planes de trabajo para solucionar problemas de los usuarios finales.\n\n# Contexto \n{{ $('Edit Fields').item.json.Context }}\n\n# Tarea\n\nEl objetivo del analisis es generar un plan de acción integral que permita mejorar y subsanar los problemas que reportan los usuarios finales.\n\n## Fase 1\nVas a recibir el comentario del usuario final\n\n## Fase 2\nDebes apartir de tu rol y contexto analizar todos los puntos de dolor del usuario y deifnir un plan claro de acción\n\n## Fase 3\nEl plan de acción debe contener:\n\n•⁠  ⁠descripción del problema\n•⁠  ⁠tareas a realizar\n•⁠  ⁠KPI's de seguimiento operativos y tacticos\n\n# Formato \n\nGenera un texto corto de no mas de 5 parrafos"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        96,
+        128
+      ],
+      "id": "fb2630c9-00d7-4214-b511-1ab9b878d994",
+      "name": "Action Plan"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c0e207a7-4621-4ff6-b50a-a5649dff3695",
+              "name": "Context",
+              "value": "Trabajas para una empresa de venta de productos tecnologicos por internet, con cobertura en Perú. Además los equipos de trabajo son los siguientes:\n\n- Venta: El equipo de ventas es el equipo comercial encargada de todo el proceso desde antes y durante la compra.\n- Servicio al cliente: El equipo de servicio al cliente para la postventa.\n- Calidad de producto: El equipo de calidad encargado de validar y auditar los procesos que aseguren la calidad y estandarizacion del producto.\n- Garantia: El equipo de garantia se encarga de tramitar los cambios o devluciones por defectos de fabrica del producto.\n- Logistica: El equipo de logistica se encarga de toda la gestion del envio de los productos a los clientes",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1152,
+        416
+      ],
+      "id": "5a25647c-cd8d-4e3d-bd88-93e40be373d4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"workTeam\":\"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        592
+      ],
+      "id": "ab99bf39-cfd5-45a1-b43d-16434cdac09a",
+      "name": "SOP - Team Clasification"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"feeling\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -800,
+        592
+      ],
+      "id": "8535bdf6-5f20-40fe-a97f-58ed7a377678",
+      "name": "SOP - Feeling Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El comentario del usuario final es: \n{{ $('Webhook - Feeling Analysis').item.json.body.message }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Rol\n\nEres una gente de IA especializado en clasificacion de comentarios en las distintas area de la empresa.\n\n# Contexto\n\n{{ $('Edit Fields').item.json.Context }}\n\n## Tarea\n\nTu objetivo es identificar el comentario del usuario final a que equipo de trabajo hace referencia.\n\n## Fase 1\nRecibir el comentario del usuario final.\n\n## Fase 2\nAnalizar y entender el comentario.\n\n## Fase 3\nClasificar el comentario en una de los equipos de trabajo de la empresa definidos previamente en el contexto.\n\n\n# Formato\nResponder en la variable 'workTeam' unicamente el nombre de los equipos a los que vaya dirigido el comentario del usuario \n\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -576,
+        416
+      ],
+      "id": "b763edf2-3025-430c-9d71-6bbda6bd09cd",
+      "name": "Team clasification"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=El comentario del usuario final es:\n{{ $('Webhook - Feeling Analysis').item.json.body.message }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Rol\n\nEres un agente de IA especializado en realizar analisis de sentimientos sobre los comentarios de los clientes.\n\n# Context\n\nTrabajas para una empresa de venta de productos tecnologicos por internet, con cobertura en Perú.\n\n# Tarea\n\nClasificar los comentarios del usuario final segun su sentimiento en las siguientes opciones: positivo, negativo o neutral.\n\n## Fase 1\nRecibir el comentario de un usuario.\n\n## Fase 2\nLeer el comentario y analizarlo segun el contexto.\n\n## Fase 3\nClasificar el comentario segun el sentimiento y responder solo una opcion.\n\n\n# Formato\nResponder solo positivo, negativo o neutral en minuscula en la variable 'feeling'"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -944,
+        416
+      ],
+      "id": "d7ba8c2d-20d5-492c-b75d-1e374ef96421",
+      "name": "Feeling analysis"
+    },
+    {
+      "parameters": {
+        "model": "gemma2:2b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        656
+      ],
+      "id": "6ff0cc72-6075-4704-aea1-c6d0109609ea",
+      "name": "FA - Chat Model - gemma2:2b",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6XVv0QkFYEkJJ30S",
+          "name": "ollama_credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gemma2:2b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        656
+      ],
+      "id": "05075de3-33ec-4eb5-aa14-9c7c69802829",
+      "name": "TC - Chat Model - gemma2:2b",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6XVv0QkFYEkJJ30S",
+          "name": "ollama_credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gemma2:2b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        96,
+        304
+      ],
+      "id": "8d866ad3-f559-42ee-8779-38fd0e02c894",
+      "name": "AP - Chat Model - gemma2:2b",
+      "credentials": {
+        "ollamaApi": {
+          "id": "6XVv0QkFYEkJJ30S",
+          "name": "ollama_credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feeling/analysis",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1376,
+        416
+      ],
+      "id": "66dc6962-31d9-4393-b1c9-940561ccd8a4",
+      "name": "Webhook - Feeling Analysis",
+      "webhookId": "7928c14c-f7ee-43e3-9a66-2c96afd6318b"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"feeling\": \"{{ $('Feeling analysis').item.json.output.feeling }}\",\n  \"workTeam\": \"{{ $('Team clasification').item.json.output.workTeam }}\",\n  \"actionPlan\": {{ JSON.stringify($json.text) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        432,
+        128
+      ],
+      "id": "c8cd6a3b-cc66-4a2a-af54-bb284e6f37f4",
+      "name": "Respond - Webhook - Feeling Negative"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"feeling\": \"{{ $('Feeling analysis').item.json.output.feeling }}\",\n  \"workTeam\": \"{{ $('Team clasification').item.json.output.workTeam }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        80,
+        576
+      ],
+      "id": "0ff8760e-68c8-4672-9df4-416acbdeab6f",
+      "name": "Respond - Webhook - Positive"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Action Plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Webhook - Positive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Feeling analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Plan": {
+      "main": [
+        [
+          {
+            "node": "Respond - Webhook - Feeling Negative",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOP - Team Clasification": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Team clasification",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOP - Feeling Analysis": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Feeling analysis",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team clasification": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feeling analysis": {
+      "main": [
+        [
+          {
+            "node": "Team clasification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FA - Chat Model - gemma2:2b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feeling analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TC - Chat Model - gemma2:2b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Team clasification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AP - Chat Model - gemma2:2b": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Action Plan",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Feeling Analysis": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "16020ce8-e1ed-4ff8-b825-0e6bd8d600df",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8efb2d4a7c73fe1061dfa978c537bc25cdb08b029f83d314157845362ca4e8db"
+  },
+  "id": "qphOQ7zMRDlE3nRQMmybu",
+  "tags": []
+}

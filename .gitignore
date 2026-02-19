@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.*
+
+# n8n
+n8n-data/
+n8n-local/
+*.bak
+
+# Node
+node_modules/
+
+# Logs
+*.log
