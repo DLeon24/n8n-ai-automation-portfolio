@@ -1,0 +1,183 @@
+{
+  "name": "image-analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.body.image }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c2331c91-d636-4270-b033-06553e7936a6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        416,
+        272
+      ],
+      "id": "fc1595ec-a593-4616-8ee5-da5c7cfb26b5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vj1ZdvGBUbNPXDpr",
+          "name": "gemini_credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"returnValue\": {{ $json.output.returnValue }},\n  \"orderStatus\": \"{{ $json.output.orderStatus }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        736,
+        0
+      ],
+      "id": "735a8e73-1d26-4a48-a274-a2198e23335e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "image/analysis",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "650a0eac-52f3-43fc-a716-51eb24a3f38f",
+      "name": "Webhook - Image Analysis",
+      "webhookId": "9679e084-2caa-4ea3-b9c4-d196967745fe"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Te anexo el mensaje de reclamo:\n{{ $json.body.claim }}\n\nEl pedido del usuario fue:\n{{ \n  $json.body.order.products\n    .map(item => `\n    nombre: ${item.name}\n    cantidad: ${item.quantity}\n    precio: ${item.price} ${item.currency}`)\n    .join('\\n')\n}}\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Rol\nEres un experto en analisis de imagenes de los pedidos de restaurantes\n\n# Contexto\nRappi funciona como un marketplace digital de alta demanda que conecta a usuarios finales con una red extensa de establecimientos gastronómicos, que van desde grandes cadenas de comida rápida hasta restaurantes de autor y locales emergentes. En esta vertical, la plataforma actúa como un facilitador logístico y comercial, permitiendo que los restaurantes digitalicen su menú, gestionen pedidos en tiempo real y expandan su alcance geográfico sin necesidad de contar con una flota de repartidores propia.\n\nEl flujo operativo se centra en la eficiencia de la \"última milla\", donde la tecnología de la aplicación coordina de forma sincronizada al restaurante (encargado de la preparación), al repartidor independiente (encargado del traslado) y al cliente. Gracias a herramientas de geolocalización y algoritmos de optimización, la plataforma permite el seguimiento en vivo del pedido, asegurando que los alimentos lleguen en condiciones óptimas y en tiempos competitivos, incluyendo modalidades de entrega ultra-rápida como \"Turbo Restaurantes\".\n\nPara los aliados gastronómicos, Rappi no es solo un canal de envíos, sino una plataforma de crecimiento que ofrece visibilidad ante millones de usuarios activos y herramientas de análisis de datos para entender tendencias de consumo. El modelo de negocio en esta vertical se basa en una estructura de comisiones por pedido y servicios adicionales de marketing dentro de la app, posicionándose como el socio estratégico principal para cualquier negocio de comida que busque escalar sus ventas a través del canal digital.\n\nLa politica de devolucion de Rappi, es que debemos responder por el valor integro de lo que llego mal o no llego del pedido\n\nEjemplos:\n1. Si el pedido llega incompleto se debe responder por el valor de lo que no llego.\n2. Si el pedido llego errado debemos responder por la totalidad del valor del pedido.\n3. Si el pedido llego deteriorado, respondemos por el 40% de los productos deteriorados.\n4. Si no llega el pedido se debe responder por la totalidad del valor del pedido.\n\n# Tarea\nTu principal objetivo es:\n\n- Debes responder el estado del pedido.\n- Debes responder el valor de devolución del cliente.\n\n## Fase 1:\nVas a recibir una serie de insumos:\n\n- Imagen del pedido: Esta es la foto enviada por el usuario del pedido que recibio.\n- Reclamo: Este es el mensaje donde el usuario nos expresa el error que cometimos.\n- Pedido: Este es la orden original del cliente que realizo dentro del app.\n\n## Fase 2:\nDebes analizar el pedido del cliente y contrastar si el reclamo esta alineado con un problema en su pedido.\n\n## Fase 3:\nDe acuerdo a la conclusion de la fase 2, vas a analizar la imagen y contrastar que la inconformidad del cliente este soportada en la imagen.\n\n## Fase 4:\nEn caso que el cliente tenga razon, calcula de acuerdo a las politicas definidas en el contexto el valor de devolucion. El valor vas a usar de referencia el que tenemos en el insumo de \"Pedido\"\n\n## Fase 5:\nClasifica el error cometido en: \"pedido errado\", \"pedido incompleto\", \"pedido completo\" o \"pedido deteriorado\".\n\n# Formato\nVas a responder en 2 variables:\n- returnValue: En esta variable vas a enviar el valor en dolares a devolver. Es una variable decimal y tiene 2 decimales. Este es el calculo que realizas en la \"Fase 4\"\n- orderStatus: En esta variable debes responder solo la clasificacion de la \"Fase 5\" y es una variable de tipo texto.\n\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7baaa6ce-02e4-45ef-896a-3e002c3dc3b4",
+      "name": "Image Analysis"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"returnValue\": 0.00,\n\t\"orderStatus\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        208
+      ],
+      "id": "7ba5760d-76a6-4a4b-94b7-fef4396db7d6",
+      "name": "SOP - Image Analysis"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Image Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Image Analysis": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Analysis": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOP - Image Analysis": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Image Analysis",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c2cfe357-232a-4fab-985d-edd1f00df1c9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8efb2d4a7c73fe1061dfa978c537bc25cdb08b029f83d314157845362ca4e8db"
+  },
+  "id": "ebXpb5WMAXvAZhfE",
+  "tags": []
+}

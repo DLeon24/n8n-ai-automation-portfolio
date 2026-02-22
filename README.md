@@ -7,11 +7,13 @@ Colección de workflows de n8n enfocados en automatización con inteligencia art
 | Proyecto | Descripción | Stack |
 |----------|-------------|-------|
 | [Feelings Analysis](./feelings-analysis/) | Agente que analiza sentimiento de comentarios de clientes, clasifica al equipo responsable y genera planes de acción para feedback negativo | n8n, Ollama, gemma2:2b, LangChain |
+| [Image Analysis](./image-analysis/) | Análisis de imágenes de pedidos (Rappi): contrasta foto + reclamo + orden, clasifica estado del pedido y calcula valor de devolución según política | n8n, Google Gemini, LangChain |
 
 ## Stack General
 
 - **[n8n](https://n8n.io/)** — Plataforma de automatización de workflows
 - **[Ollama](https://ollama.com/)** — Servidor local de modelos de lenguaje
+- **[Google Gemini](https://ai.google.dev/)** — Modelos de lenguaje con visión (análisis de imágenes)
 - **[LangChain](https://js.langchain.com/)** — Framework para cadenas LLM integrado en n8n
 
 ## Cómo usar
