@@ -8,6 +8,7 @@ Colección de workflows de n8n enfocados en automatización con inteligencia art
 |----------|-------------|-------|
 | [Feelings Analysis](./feelings-analysis/) | Agente que analiza sentimiento de comentarios de clientes, clasifica al equipo responsable y genera planes de acción para feedback negativo | n8n, Ollama, gemma2:2b, LangChain |
 | [Image Analysis](./image-analysis/) | Análisis de imágenes de pedidos (Rappi): contrasta foto + reclamo + orden, clasifica estado del pedido y calcula valor de devolución según política | n8n, Google Gemini, LangChain |
+| [Content Creator](./content-creator/) | Agente de chat para PokéInfo: investigación Pokémon/habilidades (PokeAPI), estructuración SEO de artículos y publicación vía create_post | n8n, Google Gemini, LangChain, PokeAPI |
 
 ## Stack General
 
